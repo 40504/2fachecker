@@ -1,18 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tab Checker Extension</title>
+  
+  <!-- Bootstrap CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
   <style>
-    /* Set a fixed width for the popup */
     body {
-      width: 200px; /* Adjust the width to your preference */
+      padding: 10px;
+      width: 320px; /* Adjust the width as needed */
+    }
+    
+    .service-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .service-header img {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    .service-header h5 {
+      margin: 0;
+      font-weight: bold;
+    }
+
+    .data-section {
+      margin-bottom: 1rem;
+    }
+
+    .data-section h6 {
+      margin-bottom: 3px;
+      font-size: smaller;
+    }
+
+    .data-section a {
+      color: #007bff;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <!-- <h3>Tab Checker Extension</h3> -->
-  <p id="status">Status: Checking...</p>
+  <div id="popup-content" class="container">
+    <!-- Service info and content goes here -->
+  </div>
+
+  <!-- Bootstrap JS (Optional for interactive components) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="popup.js"></script>
-  <div id="data-container"></div>
 </body>
 </html>
