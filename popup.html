@@ -13,10 +13,13 @@
 
   <style>
     body {
-      padding: 10px;
       width: 320px; /* Adjust the width as needed */
     }
-    
+
+    a {
+      word-wrap: break-word; /* Ensures URLs wrap to the next line if they are too long */
+      white-space: normal; /* Allows the URL to break into multiple lines */
+    }
     .service-header {
       display: flex;
       align-items: center;
@@ -34,10 +37,6 @@
       font-weight: bold;
     }
 
-    .data-section {
-      margin-bottom: 1rem;
-    }
-
     .data-section h6 {
       margin-bottom: 3px;
       font-size: smaller;
@@ -50,7 +49,7 @@
   </style>
 </head>
 <body>
-  <div id="popup-content" class="container">
+  <div id="popup-content" class="container pt-3 bg-body-tertiary pb-2">
     <!-- Service info and content goes here -->
   </div>
 

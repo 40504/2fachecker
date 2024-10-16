@@ -41,20 +41,20 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (matchedService.hasU2f) supportedMethods.push('U2F');
         
         if (supportedMethods.length > 0) {
-          createDataSection('Supported 2FA methods', supportedMethods.join(', '), popupContent, false, true);
+          createDataSection('Supported 2FA methods:', supportedMethods.join(', '), popupContent, false, true);
         }
 
         // Home Page Section (if applicable)
         if (matchedService.host) {
-          createDataSection('Domain', matchedService.host, popupContent, true);
+          createDataSection('Domain:', matchedService.host, popupContent, true);
         }
         
         // "Where to Set Up" Section
-        createDataSection('Where to set up', matchedService.doc, popupContent, true);
+        createDataSection('Where to set up:', matchedService.doc, popupContent, true);
 
         // "Where to Recover" Section (if applicable)
         if (matchedService.rec) {
-          createDataSection('Where to recover', matchedService.rec, popupContent, true);
+          createDataSection('Where to recover:', matchedService.rec, popupContent, true);
         }
 
         // Notes Section (if applicable)
@@ -100,7 +100,7 @@ function createBadge(text) {
 // Function to create a section with a title and content, can also include badges for supported methods
 function createDataSection(title, content, container, isLink = false, isBadge = false) {
   const section = document.createElement('div');
-  section.className = 'data-section mb-3';
+  section.className = 'data-section mb-2 border rounded-1 p-2 bg-white';
 
   const sectionTitle = document.createElement('h6');
   sectionTitle.textContent = title;
