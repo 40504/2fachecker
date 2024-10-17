@@ -7,7 +7,7 @@ function updateIconForCurrentTab() {
     if (tab) {
       try {
         const currentTabUrl = new URL(tab.url);
-        const currentTLD = extractTLD(currentTabUrl.hostname);
+        const currentFullHostname = extractFullHostname(currentTabUrl.hostname);
 
         // Load the supported services from the JSON file
         fetch(chrome.runtime.getURL("domains.json"))
@@ -19,9 +19,11 @@ function updateIconForCurrentTab() {
           })
           .then(data => {
             const supportedServices = data;
-            const supportedTLDs = supportedServices.map(service => extractTLD(service.host));
 
-            const isSupported = supportedTLDs.includes(currentTLD);
+            // Check if the current full hostname exactly matches any in the supported services
+            const isSupported = supportedServices.some(service => service.host === currentFullHostname);
+
+            // Set the appropriate icon based on whether the service is supported
             const iconPath = isSupported ? "green" : "gray";
 
             chrome.action.setIcon({
@@ -42,7 +44,10 @@ function updateIconForCurrentTab() {
   });
 }
 
-function extractTLD(hostname) {
-  const parts = hostname.split(".");
-  return parts.slice(-2).join(".");
+// Function to extract the full hostname, removing 'www.' but keeping other subdomains
+function extractFullHostname(hostname) {
+  if (hostname.startsWith('www.')) {
+    return hostname.substring(4); // Remove 'www.' from the hostname
+  }
+  return hostname;  // Return the full hostname if 'www.' is not present
 }

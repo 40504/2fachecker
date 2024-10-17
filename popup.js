@@ -1,7 +1,6 @@
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
   const currentTabUrl = new URL(tabs[0].url);
   const currentFullHostname = extractFullHostname(currentTabUrl.hostname); // Use full hostname
-  console.log(currentFullHostname);
 
   // Load the supported services from the JSON file
   fetch(chrome.runtime.getURL("domains.json"))
