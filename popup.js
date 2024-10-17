@@ -137,7 +137,7 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
       please provide the documentation URL by 
       <a href="https://github.com/40504/2fachecker/issues" target="_blank" class="text-decoration-none">
         opening a GitHub issue
-      </a>.
+      </a>
     `;
     section.appendChild(defaultMessage);
   } else if (sectionType === 'rec' && !content) {
@@ -149,7 +149,7 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
       please provide the documentation URL by 
       <a href="https://github.com/40504/2fachecker/issues" target="_blank" class="text-decoration-none">
         opening a GitHub issue
-      </a>.
+      </a>
     `;
     section.appendChild(defaultMessage);
   } else {
