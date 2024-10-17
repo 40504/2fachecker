@@ -9,6 +9,9 @@ function updateIconForCurrentTab() {
         const currentTabUrl = new URL(tab.url);
         const currentFullHostname = extractFullHostname(currentTabUrl.hostname);
 
+        console.log("Current tab URL:", tab.url);
+        console.log("Extracted full hostname:", currentFullHostname);
+
         // Load the supported services from the JSON file
         fetch(chrome.runtime.getURL("domains.json"))
           .then(response => {
@@ -20,11 +23,23 @@ function updateIconForCurrentTab() {
           .then(data => {
             const supportedServices = data;
 
-            // Check if the current full hostname exactly matches any in the supported services
-            const isSupported = supportedServices.some(service => service.host === currentFullHostname);
+            // Log all supported services for debugging
+            console.log("Supported services:", supportedServices);
+
+            // Check if the current full hostname ends with any in the supported services
+            const matchedService = supportedServices.find(service => currentFullHostname.endsWith(service.host));
+
+            console.log("Matched service:", matchedService);
+
+            // Determine if the service is supported based on whether we found a match
+            const isSupported = !!matchedService; // true if matchedService is not null
+
+            console.log("Is supported:", isSupported);
 
             // Set the appropriate icon based on whether the service is supported
             const iconPath = isSupported ? "green" : "gray";
+
+            console.log("Setting icon to:", iconPath);
 
             chrome.action.setIcon({
               path: {
@@ -49,5 +64,5 @@ function extractFullHostname(hostname) {
   if (hostname.startsWith('www.')) {
     return hostname.substring(4); // Remove 'www.' from the hostname
   }
-  return hostname;  // Return the full hostname if 'www.' is not present
+  return hostname; // Return the full hostname if 'www.' is not present
 }
