@@ -1,6 +1,7 @@
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
   const currentTabUrl = new URL(tabs[0].url);
-  const currentTLD = extractTLD(currentTabUrl.hostname);
+  const currentFullHostname = extractFullHostname(currentTabUrl.hostname); // Use full hostname
+  console.log(currentFullHostname);
 
   // Load the supported services from the JSON file
   fetch(chrome.runtime.getURL("domains.json"))
@@ -8,8 +9,8 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     .then(data => {
       const supportedServices = data;
 
-      // Find the service that matches the current tab's TLD
-      const matchedService = supportedServices.find(service => extractTLD(service.host) === currentTLD);
+      // Find the service that matches the current tab's full hostname
+      const matchedService = supportedServices.find(service => service.host === currentFullHostname);
 
       const popupContent = document.getElementById('popup-content');
       popupContent.innerHTML = ""; // Clear previous content
@@ -21,8 +22,8 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
         const serviceImage = document.createElement('img');
         serviceImage.alt = `${matchedService.name} icon`; // Alt text for accessibility
-        serviceImage.style.width = '48px'; // Optional: Set default image size
-        serviceImage.style.height = '48px'; // Optional: Set default image size
+        serviceImage.style.width = '48px'; // Set default image size
+        serviceImage.style.height = '48px';
         serviceImage.className = 'rounded-3 mb-3';
 
         // Fetch the service icon (try 256px, fallback to 64px)
@@ -31,7 +32,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         serviceHeader.appendChild(serviceImage);
 
         const serviceTitle = document.createElement('h5');
-        serviceTitle.textContent = matchedService.name || currentTLD;
+        serviceTitle.textContent = matchedService.name || currentFullHostname;
         serviceTitle.className = 'fw-bold mb-0';
         serviceHeader.appendChild(serviceTitle);
 
@@ -64,31 +65,25 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           createDataSection('Notes', matchedService.notes, popupContent);
         }
       } else {
-        popupContent.innerHTML = `Click to search on Google: <a href="https://www.google.com/search?q=https://${currentTLD}:+2fa" target="_blank">https://${currentTLD}: 2fa</a>`;
+        popupContent.innerHTML = `Click to search on Google: <a href="https://www.google.com/search?q=https://${currentFullHostname}:+2fa" target="_blank">https://${currentFullHostname}: 2fa</a>`;
       }
     });
 });
 
-// Function to fetch the service icon
+// Function to fetch the service icon (try 256px, fallback to 64px)
 function fetchServiceIcon(host, imgElement) {
-  // Construct the base URL for the icons
   const baseUrl = `https://authenticator.2stable.com/assets/img/2fa-services/Icons/`;
-
-  // First, try to load the .svg version of the icon
   const svgIconUrl = `${baseUrl}${host}.svg`;
 
   fetch(svgIconUrl)
     .then(response => {
       if (response.ok) {
-        // If the .svg icon exists, set it as the image source
         imgElement.src = svgIconUrl;
       } else {
-        // If the .svg file is not found, fall back to the .png version
         throw new Error('SVG icon not found, trying PNG');
       }
     })
     .catch(() => {
-      // If SVG fetch fails or .svg is not found, try the .png version
       const pngIconUrl = `${baseUrl}${host}.png`;
       return fetch(pngIconUrl)
         .then(response => {
@@ -99,7 +94,7 @@ function fetchServiceIcon(host, imgElement) {
           }
         })
         .catch(() => {
-          // Final fallback to Google's 64px favicon in case of any error
+          // Final fallback to Google's 256px favicon
           const googleFaviconUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${host}&size=256`;
           imgElement.src = googleFaviconUrl;
         });
@@ -115,40 +110,36 @@ function createBadge(text) {
 }
 
 // Function to create a section with a title and content, can also include badges for supported methods
-// Function to create a section with a title and content, can also include badges for supported methods
 function createDataSection(title, content, container, isLink = false, isBadge = false, sectionType = '') {
   const section = document.createElement('div');
-  section.className = 'data-section mb-2 border border-light-subtle rounded-1 p-2 bg-white';  // Keeping your original styling
+  section.className = 'data-section mb-2 border border-light-subtle rounded-1 p-2 bg-white';
 
   const sectionTitle = document.createElement('h6');
   sectionTitle.textContent = title;
-  sectionTitle.className = 'small mb-1';  // Keeping your original styling
+  sectionTitle.className = 'small mb-1';
   section.appendChild(sectionTitle);
 
   if (isBadge) {
-    // Create a div to wrap all the badge spans
     const badgeContainer = document.createElement('div');
     badgeContainer.className = 'small';
 
     const contentArray = content.split(', ');
     contentArray.forEach(method => {
-      const badge = createBadge(method);  // Create each badge (span)
-      badgeContainer.appendChild(badge);  // Append the badge to the badgeContainer div
+      const badge = createBadge(method);
+      badgeContainer.appendChild(badge);
     });
 
-    section.appendChild(badgeContainer);  // Append the badgeContainer div to the section
+    section.appendChild(badgeContainer);
   } else if (isLink && content) {
-    // For clickable links like Documentation and Recovery
     const link = document.createElement('a');
-    link.className = 'small text-decoration-none';  // Keeping your original styling
-    link.href = content.startsWith('http') ? content : `https://${content}`; // Ensure the link starts with http/https
+    link.className = 'small text-decoration-none';
+    link.href = content.startsWith('http') ? content : `https://${content}`;
     link.target = '_blank';
     link.textContent = content;
     section.appendChild(link);
   } else if (sectionType === 'doc' && !content) {
-    // Display default message when documentation is not available
     const defaultMessage = document.createElement('p');
-    defaultMessage.className = 'small text-muted mb-0';  // Keeping consistent styling
+    defaultMessage.className = 'small text-muted mb-0';
     defaultMessage.innerHTML = `
       Setup documentation is not available at the moment. If you think there is a mistake, 
       please provide the documentation URL by 
@@ -158,9 +149,8 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
     `;
     section.appendChild(defaultMessage);
   } else if (sectionType === 'rec' && !content) {
-    // Default message for missing recovery documentation
     const defaultMessage = document.createElement('p');
-    defaultMessage.className = 'small text-muted mb-0';  // Your original styling
+    defaultMessage.className = 'small text-muted mb-0';
     defaultMessage.innerHTML = `
       Recovery documentation is not available at the moment. If you think there is a mistake, 
       please provide the documentation URL by 
@@ -178,8 +168,10 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
   container.appendChild(section);
 }
 
-// Function to extract the top-level domain (TLD) from a hostname
-function extractTLD(hostname) {
-  const parts = hostname.split(".");
-  return parts.slice(-2).join(".");
+// Function to extract the full hostname, removing 'www.' but keeping other subdomains
+function extractFullHostname(hostname) {
+  if (hostname.startsWith('www.')) {
+    return hostname.substring(4); // Remove 'www.' from the hostname
+  }
+  return hostname;  // Return the hostname as it is if 'www.' is not present
 }
