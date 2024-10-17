@@ -17,12 +17,13 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (matchedService) {
         // Create Service Header (Service Name and Icon)
         const serviceHeader = document.createElement('div');
-        serviceHeader.className = 'service-header';
+        serviceHeader.className = 'd-flex flex-column align-items-center mb-3';
 
         const serviceImage = document.createElement('img');
         serviceImage.alt = `${matchedService.name} icon`; // Alt text for accessibility
-        serviceImage.style.width = '32px'; // Optional: Set default image size
-        serviceImage.style.height = '32px'; // Optional: Set default image size
+        serviceImage.style.width = '48px'; // Optional: Set default image size
+        serviceImage.style.height = '48px'; // Optional: Set default image size
+        serviceImage.className = 'rounded-3 mb-3';
 
         // Fetch the service icon (try 256px, fallback to 64px)
         fetchServiceIcon(matchedService.host, serviceImage);
@@ -31,7 +32,15 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
         const serviceTitle = document.createElement('h5');
         serviceTitle.textContent = matchedService.name || currentTLD;
+        serviceTitle.className = 'fw-bold mb-0';
         serviceHeader.appendChild(serviceTitle);
+
+        const serviceDomain = document.createElement('a');
+        serviceDomain.className = 'small text-decoration-none';
+        serviceDomain.href = 'https://' + matchedService.host;
+        serviceDomain.target = '_blank';
+        serviceDomain.textContent = matchedService.host;
+        serviceHeader.appendChild(serviceDomain);
 
         popupContent.appendChild(serviceHeader);
 
@@ -39,15 +48,15 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         let supportedMethods = [];
         if (matchedService.hasTotp) supportedMethods.push('TOTP');
         if (matchedService.hasU2f) supportedMethods.push('U2F');
-        
+
         if (supportedMethods.length > 0) {
           createDataSection('Supported 2FA methods:', supportedMethods.join(', '), popupContent, false, true);
         }
 
         // Home Page Section (if applicable)
-        if (matchedService.host) {
-          createDataSection('Domain:', matchedService.host, popupContent, true);
-        }
+        // if (matchedService.host) {
+        //   createDataSection('Domain:', matchedService.host, popupContent, true);
+        // }
         
         // "Where to Set Up" Section
         createDataSection('Where to set up:', matchedService.doc, popupContent, true);
@@ -92,7 +101,7 @@ function fetchServiceIcon(host, imgElement) {
 // Function to create badges with the appropriate Bootstrap styling
 function createBadge(text) {
   const badge = document.createElement('span');
-  badge.className = 'badge bg-success-subtle text-success-emphasis rounded-pill me-2';
+  badge.className = 'badge bg-success-subtle border border-success-subtle text-success-emphasis rounded-pill me-2';
   badge.textContent = text;
   return badge;
 }
@@ -100,11 +109,12 @@ function createBadge(text) {
 // Function to create a section with a title and content, can also include badges for supported methods
 function createDataSection(title, content, container, isLink = false, isBadge = false) {
   const section = document.createElement('div');
-  section.className = 'data-section mb-2 border rounded-1 p-2 bg-white';
+  section.className = 'data-section mb-2 border border-light-subtle rounded-1 p-2 bg-white';
 
   const sectionTitle = document.createElement('h6');
   sectionTitle.textContent = title;
   section.appendChild(sectionTitle);
+  sectionTitle.className = 'small mb-1';
 
   if (isBadge) {
     const contentArray = content.split(', ');
@@ -115,6 +125,7 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
   } else if (isLink) {
     // For the Domain, Documentation, and Recovery fields that should be clickable
     const link = document.createElement('a');
+    link.className = 'small text-decoration-none';
     link.href = content.startsWith('http') ? content : `https://${content}`; // Ensure the link starts with http/https
     link.target = '_blank';
     link.textContent = content;
