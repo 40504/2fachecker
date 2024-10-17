@@ -1,6 +1,7 @@
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
   const currentTabUrl = new URL(tabs[0].url);
   const currentFullHostname = extractFullHostname(currentTabUrl.hostname); // Use full hostname
+  console.log(currentFullHostname);
 
   // Load the supported services from the JSON file
   fetch(chrome.runtime.getURL("domains.json"))
@@ -64,7 +65,23 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           createDataSection('Notes', matchedService.notes, popupContent);
         }
       } else {
-        popupContent.innerHTML = `Click to search on Google: <a href="https://www.google.com/search?q=https://${currentFullHostname}:+2fa" target="_blank">https://${currentFullHostname}: 2fa</a>`;
+
+        // Display a structured message for unsupported services using createDataSection
+        createDataSection(
+          'Service Not Supported:',
+          `This service is not currently supported for 2FA. 
+          You can check for more information by searching on Google`,
+          popupContent
+        );
+
+        // Add a link for Google search in the section
+        const searchUrl = `https://www.google.com/search?q=https://${currentFullHostname}:+2fa`;
+        createDataSection(
+          'Search on Google for 2FA setup:',
+          searchUrl,
+          popupContent,
+          true
+        );
       }
     });
 });
@@ -134,7 +151,15 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
     link.className = 'small text-decoration-none';
     link.href = content.startsWith('http') ? content : `https://${content}`;
     link.target = '_blank';
-    link.textContent = content;
+
+    // Check if this is a Google search link and display a friendly label instead
+    if (content.includes('google.com/search?q=https://')) {
+      const query = content.split('q=')[1];
+      link.textContent = `${decodeURIComponent(query)}`;
+    } else {
+      link.textContent = content;
+    }
+
     section.appendChild(link);
   } else if (sectionType === 'doc' && !content) {
     const defaultMessage = document.createElement('p');
@@ -160,6 +185,7 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
     section.appendChild(defaultMessage);
   } else {
     const paragraph = document.createElement('p');
+    paragraph.className = 'small text-muted mb-0';
     paragraph.textContent = content || 'Information not available';
     section.appendChild(paragraph);
   }
