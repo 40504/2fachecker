@@ -53,11 +53,6 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
           createDataSection('Supported 2FA methods:', supportedMethods.join(', '), popupContent, false, true);
         }
 
-        // Home Page Section (if applicable)
-        // if (matchedService.host) {
-        //   createDataSection('Domain:', matchedService.host, popupContent, true);
-        // }
-        
         // "Where to Set Up" Section
         createDataSection('Where to set up:', matchedService.doc, popupContent, true, false, 'doc');
 
@@ -74,25 +69,40 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     });
 });
 
-// Function to fetch the service icon (try 256px, fallback to 64px)
+// Function to fetch the service icon
 function fetchServiceIcon(host, imgElement) {
-  // First try 256px favicon
-  const googleFaviconUrl256 = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${host}&size=256`;
+  // Construct the base URL for the icons
+  const baseUrl = `https://authenticator.2stable.com/assets/img/2fa-services/Icons/`;
 
-  fetch(googleFaviconUrl256)
+  // First, try to load the .svg version of the icon
+  const svgIconUrl = `${baseUrl}${host}.svg`;
+
+  fetch(svgIconUrl)
     .then(response => {
       if (response.ok) {
-        imgElement.src = googleFaviconUrl256;
+        // If the .svg icon exists, set it as the image source
+        imgElement.src = svgIconUrl;
       } else {
-        // Fallback to 64px favicon
-        const googleFaviconFallback = `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
-        imgElement.src = googleFaviconFallback;
+        // If the .svg file is not found, fall back to the .png version
+        throw new Error('SVG icon not found, trying PNG');
       }
     })
     .catch(() => {
-      // Final fallback to 64px favicon
-      const googleFaviconFallback = `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
-      imgElement.src = googleFaviconFallback;
+      // If SVG fetch fails or .svg is not found, try the .png version
+      const pngIconUrl = `${baseUrl}${host}.png`;
+      return fetch(pngIconUrl)
+        .then(response => {
+          if (response.ok) {
+            imgElement.src = pngIconUrl;
+          } else {
+            throw new Error('PNG icon not found, using Google Favicon');
+          }
+        })
+        .catch(() => {
+          // Final fallback to Google's 64px favicon in case of any error
+          const googleFaviconUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${host}&size=256`;
+          imgElement.src = googleFaviconUrl;
+        });
     });
 }
 
@@ -105,6 +115,7 @@ function createBadge(text) {
 }
 
 // Function to create a section with a title and content, can also include badges for supported methods
+// Function to create a section with a title and content, can also include badges for supported methods
 function createDataSection(title, content, container, isLink = false, isBadge = false, sectionType = '') {
   const section = document.createElement('div');
   section.className = 'data-section mb-2 border border-light-subtle rounded-1 p-2 bg-white';  // Keeping your original styling
@@ -115,11 +126,17 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
   section.appendChild(sectionTitle);
 
   if (isBadge) {
+    // Create a div to wrap all the badge spans
+    const badgeContainer = document.createElement('div');
+    badgeContainer.className = 'small';
+
     const contentArray = content.split(', ');
     contentArray.forEach(method => {
-      const badge = createBadge(method);
-      section.appendChild(badge);
+      const badge = createBadge(method);  // Create each badge (span)
+      badgeContainer.appendChild(badge);  // Append the badge to the badgeContainer div
     });
+
+    section.appendChild(badgeContainer);  // Append the badgeContainer div to the section
   } else if (isLink && content) {
     // For clickable links like Documentation and Recovery
     const link = document.createElement('a');
