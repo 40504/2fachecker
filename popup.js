@@ -59,12 +59,10 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         // }
         
         // "Where to Set Up" Section
-        createDataSection('Where to set up:', matchedService.doc, popupContent, true);
+        createDataSection('Where to set up:', matchedService.doc, popupContent, true, false, 'doc');
 
         // "Where to Recover" Section (if applicable)
-        if (matchedService.rec) {
-          createDataSection('Where to recover:', matchedService.rec, popupContent, true);
-        }
+        createDataSection('Where to recover:', matchedService.rec, popupContent, true, false, 'rec');
 
         // Notes Section (if applicable)
         if (matchedService.notes) {
@@ -107,14 +105,14 @@ function createBadge(text) {
 }
 
 // Function to create a section with a title and content, can also include badges for supported methods
-function createDataSection(title, content, container, isLink = false, isBadge = false) {
+function createDataSection(title, content, container, isLink = false, isBadge = false, sectionType = '') {
   const section = document.createElement('div');
-  section.className = 'data-section mb-2 border border-light-subtle rounded-1 p-2 bg-white';
+  section.className = 'data-section mb-2 border border-light-subtle rounded-1 p-2 bg-white';  // Keeping your original styling
 
   const sectionTitle = document.createElement('h6');
   sectionTitle.textContent = title;
+  sectionTitle.className = 'small mb-1';  // Keeping your original styling
   section.appendChild(sectionTitle);
-  sectionTitle.className = 'small mb-1';
 
   if (isBadge) {
     const contentArray = content.split(', ');
@@ -122,17 +120,41 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
       const badge = createBadge(method);
       section.appendChild(badge);
     });
-  } else if (isLink) {
-    // For the Domain, Documentation, and Recovery fields that should be clickable
+  } else if (isLink && content) {
+    // For clickable links like Documentation and Recovery
     const link = document.createElement('a');
-    link.className = 'small text-decoration-none';
+    link.className = 'small text-decoration-none';  // Keeping your original styling
     link.href = content.startsWith('http') ? content : `https://${content}`; // Ensure the link starts with http/https
     link.target = '_blank';
     link.textContent = content;
     section.appendChild(link);
+  } else if (sectionType === 'doc' && !content) {
+    // Display default message when documentation is not available
+    const defaultMessage = document.createElement('p');
+    defaultMessage.className = 'small text-muted mb-0';  // Keeping consistent styling
+    defaultMessage.innerHTML = `
+      Setup documentation is not available at the moment. If you think there is a mistake, 
+      please provide the documentation URL by 
+      <a href="https://github.com/40504/2fachecker/issues" target="_blank" class="text-decoration-none">
+        opening a GitHub issue
+      </a>.
+    `;
+    section.appendChild(defaultMessage);
+  } else if (sectionType === 'rec' && !content) {
+    // Default message for missing recovery documentation
+    const defaultMessage = document.createElement('p');
+    defaultMessage.className = 'small text-muted mb-0';  // Your original styling
+    defaultMessage.innerHTML = `
+      Recovery documentation is not available at the moment. If you think there is a mistake, 
+      please provide the documentation URL by 
+      <a href="https://github.com/40504/2fachecker/issues" target="_blank" class="text-decoration-none">
+        opening a GitHub issue
+      </a>.
+    `;
+    section.appendChild(defaultMessage);
   } else {
     const paragraph = document.createElement('p');
-    paragraph.textContent = content;
+    paragraph.textContent = content || 'Information not available';
     section.appendChild(paragraph);
   }
 
