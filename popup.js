@@ -195,7 +195,7 @@ function createDataSection(title, content, container, isLink = false, isBadge = 
 
 // Function to extract the full hostname, removing 'www.' but keeping other subdomains
 function extractFullHostname(hostname) {
-  const subdomainsToIgnore = ['www', 'docs', 'support', 'help', `documentation`, `faq`, `kb`, `guide`, `blog`, `news`, `api`, `status`];
+  const subdomainsToIgnore = ['www', 'docs', 'support', 'help', `documentation`, `faq`, `kb`, `guide`, `blog`, `news`, `api`, `status`, `checkout`, `app`];
   const parts = hostname.split('.');
 
   // If there's a subdomain and it's one of the ones to ignore, remove it
